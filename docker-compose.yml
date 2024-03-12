@@ -1,0 +1,72 @@
+version: '3'
+name: prueba-vuelos
+
+services:
+  frontend:
+    container_name: 'prueba-vuelos-frontend'
+    build:
+      context: ./frontend
+    ports:
+      - '3000:3000'
+    networks:
+      - prueba_vuelos
+
+  backend:
+    container_name: 'prueba-vuelos-backend'
+    build:
+      context: ./backend
+    ports:
+      - '8000:8000'
+    depends_on:
+      - db_server
+    networks:
+      - prueba_vuelos
+
+  db_server:
+    image: mysql:latest
+    container_name: 'prueba-vuelos-mysql'
+    restart: always
+    tty: true
+    environment:
+      TZ: '${TZ}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_ROOT_PASSWORD: ''
+      MYSQL_USER: '${DB_USER}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./sql_dump:/docker-entrypoint-initdb.d
+    command: ['mysqld', '--character-set-server=${DB_CHARSET}', '--collation-server=${DB_COLLATION}']
+    ports:
+      - '${DB_PORT}:${DB_PORT}'
+    healthcheck:
+      test: mysqladmin ping -h ${DB_HOST} -u root --password=
+      interval: 5s
+      retries: 5
+    networks:
+      - prueba_vuelos
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5
+    container_name: 'prueba-vuelos-phpmyadmin'
+    ports:
+      - "8102:80"
+    environment:
+      PMA_HOST: db_server
+    depends_on:
+      - db_server
+    volumes:
+      - db_admin_data:/var/www/html
+    networks:
+      - prueba_vuelos
+
+networks:
+  prueba_vuelos:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
+  db_admin_data:
+    driver: local
