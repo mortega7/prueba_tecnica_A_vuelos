@@ -29,7 +29,7 @@ apiEstadisticas.get('/aerolineas-reservas', async (req, res) => {
 					],
 				},
 			],
-			group: ['Vuelo.IdAerolinea', 'Vuelo.Aerolinea.NombreAerolinea'],
+			group: ['Vuelo.IdAerolinea', 'Vuelo.Aerolinea.NombreAerolinea', 'Vuelo.IdVuelo'],
 			order: [[Sequelize.literal('CantidadReservas'), 'DESC']],
 		});
 
